@@ -2,5 +2,8 @@
   "name": "otomato_bot",
   "version": "1.0.0",
   "main": "index.js",
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "otomato-sdk": "^2.0.337"
+  }
 }

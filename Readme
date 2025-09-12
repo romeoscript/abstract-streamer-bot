@@ -1,0 +1,98 @@
+# Abstract Streamer Bot 🍅
+
+A Telegram bot that sends notifications when Abstract streamers go live. Built with Otomato SDK for growth hacking.
+
+## Quick Setup
+
+### 1. Get Your Tokens
+
+**Telegram Bot:**
+1. Message [@BotFather](https://t.me/BotFather)
+2. Send `/newbot`
+3. Follow instructions and copy your token
+
+**Otomato Token:**
+1. Visit: https://secret-echinodon-f5b.notion.site/How-to-use-the-SDK-Somnia-edition-20f268c3f22980ba8452caea7d377b2c
+2. Follow the guide to generate your token
+
+### 2. Install & Run
+
+```bash
+# Clone/download the files
+# Create these files: package.json, bot.js, .env.example, .gitignore
+
+# Install dependencies
+npm install
+
+# Setup environment
+cp .env.example .env
+# Edit .env with your actual tokens
+
+# Start the bot
+npm start
+
+# For development (auto-restart)
+npm run dev
+```
+
+## Bot Commands
+
+```
+/start - Get started
+/add <streamer> - Add streamer to watch  
+/remove <streamer> - Remove streamer
+/list - Show your streamers
+/toggle - Turn notifications on/off
+```
+
+## Files You Need
+
+```
+abstract-streamer-bot/
+├── package.json     # Dependencies
+├── bot.js          # Main bot code  
+├── .env.example    # Environment template
+├── .env            # Your actual tokens (create this)
+├── .gitignore      # Git ignore
+└── README.md       # This file
+```
+
+## Example Usage
+
+```
+User: /start
+Bot: 🍅 Welcome to Abstract Streamer Notifications!
+
+User: /add ninja
+Bot: ✅ Added ninja to your watchlist!
+
+User: /list  
+Bot: 📺 Your Streamers (1):
+     • ninja
+     Notifications: 🔔 ON
+```
+
+When `ninja` goes live → Bot sends: "🔴 ninja is live! 🎮 Watch now: https://portal.abs.xyz/stream/ninja"
+
+## Growth Hacking
+
+Every notification includes "Made with ❤️ by Otomato" to drive users to discover the platform and build their own automations.
+
+## Deploy
+
+**Railway:**
+1. Connect GitHub repo to Railway
+2. Add environment variables in dashboard
+3. Deploy!
+
+**Heroku:**
+```bash
+heroku create your-bot-name
+heroku config:set TELEGRAM_BOT_TOKEN=your_token
+heroku config:set OTOMATO_TOKEN=your_token  
+git push heroku main
+```
+
+---
+
+**Made with ❤️ by Otomato** - [Build your own bots](https://otomato.xyz)
