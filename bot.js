@@ -27,15 +27,38 @@ class AbstractStreamerBot {
         chatId
       });
 
-      ctx.reply(
-        '🍅 Welcome to Abstract Streamer Notifications!\n\n' +
-        'Commands:\n' +
-        '/add <streamer> - Add streamer to watch\n' +
-        '/remove <streamer> - Remove streamer\n' +
-        '/list - Show your streamers\n' +
-        '/toggle - Turn notifications on/off\n\n' +
-        'Made with ❤️ by Otomato - Visit otomato.xyz to build your own bots!'
-      );
+      const welcomeMessage = `🍅 *Welcome to Abstract Streamer Notifications!*
+
+Get notified instantly when your favorite streamers go live! 
+
+*Features:*
+• 📺 Real-time stream notifications
+• 🎯 Customizable watchlist
+• 🔔 Smart notification management
+• ⚡ Lightning-fast alerts
+
+Made with ❤️ by [Otomato](https://otomato.xyz) - Build your own bots!`;
+
+      const keyboard = {
+        reply_markup: {
+          inline_keyboard: [
+            [
+              { text: '📺 Add Streamer', callback_data: 'add_streamer' },
+              { text: '📋 My Streamers', callback_data: 'list_streamers' }
+            ],
+            [
+              { text: '🔔 Toggle Notifications', callback_data: 'toggle_notifications' },
+              { text: '❌ Remove Streamer', callback_data: 'remove_streamer' }
+            ],
+            [
+              { text: 'ℹ️ Help', callback_data: 'help' },
+              { text: '🌐 Visit Otomato', url: 'https://otomato.xyz' }
+            ]
+          ]
+        }
+      };
+
+      ctx.replyWithMarkdown(welcomeMessage, keyboard);
     });
 
     // Add streamer command
@@ -141,6 +164,78 @@ class AbstractStreamerBot {
       const status = userData.notificationsEnabled ? 'enabled' : 'disabled';
       
       ctx.reply(`🔔 Notifications ${status}!`);
+    });
+
+    // Inline keyboard callback handlers
+    this.bot.action('add_streamer', (ctx) => {
+      ctx.answerCbQuery();
+      ctx.reply('📺 *Add a Streamer*\n\nPlease send the streamer handle:\n\nExample: `/add ninja`', { parse_mode: 'Markdown' });
+    });
+
+    this.bot.action('list_streamers', async (ctx) => {
+      ctx.answerCbQuery();
+      const userId = ctx.from.id;
+      const userData = this.users.get(userId);
+      
+      if (!userData) {
+        return ctx.reply('Please use /start first!');
+      }
+
+      if (userData.streamers.length === 0) {
+        return ctx.reply('You are not watching any streamers yet. Use /add <streamer> to add one!');
+      }
+
+      const status = userData.notificationsEnabled ? '🔔 ON' : '🔕 OFF';
+      const streamerList = userData.streamers.map(s => `• ${s}`).join('\n');
+      
+      ctx.reply(
+        `📺 *Your Streamers (${userData.streamers.length}):*\n\n` +
+        `${streamerList}\n\n` +
+        `Notifications: ${status}\n\n` +
+        `Use /remove <streamer> to remove a streamer`,
+        { parse_mode: 'Markdown' }
+      );
+    });
+
+    this.bot.action('toggle_notifications', async (ctx) => {
+      ctx.answerCbQuery();
+      const userId = ctx.from.id;
+      const userData = this.users.get(userId);
+      
+      if (!userData) {
+        return ctx.reply('Please use /start first!');
+      }
+
+      userData.notificationsEnabled = !userData.notificationsEnabled;
+      const status = userData.notificationsEnabled ? 'enabled' : 'disabled';
+      const emoji = userData.notificationsEnabled ? '🔔' : '🔕';
+      
+      ctx.reply(`${emoji} Notifications ${status}!`);
+    });
+
+    this.bot.action('remove_streamer', (ctx) => {
+      ctx.answerCbQuery();
+      ctx.reply('❌ *Remove a Streamer*\n\nPlease send the streamer handle:\n\nExample: `/remove ninja`', { parse_mode: 'Markdown' });
+    });
+
+    this.bot.action('help', (ctx) => {
+      ctx.answerCbQuery();
+      const helpMessage = `ℹ️ *Help & Commands*
+
+*Available Commands:*
+• \`/add <streamer>\` - Add streamer to watchlist
+• \`/remove <streamer>\` - Remove streamer from watchlist  
+• \`/list\` - Show your current streamers
+• \`/toggle\` - Turn notifications on/off
+
+*How it works:*
+1. Add streamers using their handle (e.g., ninja, shroud)
+2. Get instant notifications when they go live
+3. Manage your watchlist anytime
+
+*Need help?* Visit [Otomato.xyz](https://otomato.xyz) for more info!`;
+
+      ctx.replyWithMarkdown(helpMessage);
     });
   }
 
