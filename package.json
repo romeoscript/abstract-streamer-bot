@@ -1,9 +1,16 @@
 {
   "name": "otomato_bot",
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "bot.js",
+  "scripts": {
+    "start": "node bot.js",
+    "dev": "nodemon bot.js"
+  },
   "license": "MIT",
   "dependencies": {
-    "otomato-sdk": "^2.0.337"
+    "dotenv": "^16.4.5",
+    "nodemon": "^3.1.7",
+    "otomato-sdk": "^2.0.337",
+    "telegraf": "^4.14.0"
   }
 }

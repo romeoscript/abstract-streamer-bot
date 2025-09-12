@@ -3,12 +3,12 @@
 
 require('dotenv').config();
 const { Telegraf } = require('telegraf');
-const { Otomato, Trigger, Action, Edge, Workflow, TRIGGERS, ACTIONS } = require('@otomato/sdk');
+const { Trigger, Action, Edge, Workflow, TRIGGERS, ACTIONS } = require('otomato-sdk');
 
 class AbstractStreamerBot {
   constructor(telegramToken, otomatoToken) {
     this.bot = new Telegraf(telegramToken);
-    this.otomato = new Otomato(otomatoToken);
+    this.otomatoToken = otomatoToken;
     this.users = new Map(); // In-memory storage - use database in production
     this.activeWorkflows = new Map(); // streamer -> workflowId
     this.setupCommands();
@@ -93,7 +93,8 @@ class AbstractStreamerBot {
         const workflowKey = `${userId}_${streamerHandle}`;
         const workflowId = this.activeWorkflows.get(workflowKey);
         if (workflowId) {
-          await this.otomato.deleteWorkflow(workflowId);
+          const workflow = new Workflow();
+          await workflow.delete(workflowId);
           this.activeWorkflows.delete(workflowKey);
         }
         
@@ -146,7 +147,7 @@ class AbstractStreamerBot {
   // Create Otomato workflow for streamer notifications
   async createStreamerWorkflow(streamerHandle, chatId) {
     const workflow = await this.abstractGetNotifiedWhenStreamerIsLive(streamerHandle, chatId);
-    const result = await this.otomato.createWorkflow(workflow);
+    const result = await workflow.create();
     return result.id;
   }
 
