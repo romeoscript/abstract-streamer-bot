@@ -24,7 +24,7 @@ class AbstractStreamerBot {
     apiServices.setAuth(otomatoToken);
     
     this.setupCommands();
-    this.initializeDatabase();
+    // Don't call initializeDatabase here - it will be called in start()
   }
 
   // Initialize database tables
@@ -255,12 +255,25 @@ Made with ❤️ by [Otomato](https://otomato.xyz) - Build your own bots!`;
           
           // Create Otomato workflow for this user-streamer combination
           console.log(`🔧 [ADD COMMAND] Creating Otomato workflow for "${streamerHandle}"...`);
-          const workflowId = await this.createStreamerWorkflow(streamerHandle, userData.chat_id);
-          console.log(`✅ [ADD COMMAND] Workflow created with ID: ${workflowId}`);
+          let workflowId;
+          try {
+            workflowId = await this.createStreamerWorkflow(streamerHandle, userData.chat_id);
+            console.log(`✅ [ADD COMMAND] Workflow created with ID: ${workflowId}`);
+          } catch (workflowError) {
+            console.error(`❌ [ADD COMMAND] Failed to create workflow for "${streamerHandle}":`, workflowError);
+            // Remove the streamer from database since workflow creation failed
+            await this.removeStreamerFromUser(userId, streamerHandle);
+            return ctx.reply(`❌ Failed to create notification workflow for ${streamerHandle}. Please check your Otomato token and try again.`);
+          }
           
           // Save workflow to database
-          await this.saveWorkflow(userId, streamerHandle, workflowId);
-          console.log(`💾 [ADD COMMAND] Saved workflow to database: ${userId}_${streamerHandle} -> ${workflowId}`);
+          try {
+            await this.saveWorkflow(userId, streamerHandle, workflowId);
+            console.log(`💾 [ADD COMMAND] Saved workflow to database: ${userId}_${streamerHandle} -> ${workflowId}`);
+          } catch (dbError) {
+            console.error(`❌ [ADD COMMAND] Failed to save workflow to database:`, dbError);
+            return ctx.reply(`❌ Failed to save workflow configuration. Please try again.`);
+          }
           
           console.log(`🎉 [ADD COMMAND] Successfully added "${streamerHandle}" to watchlist!`);
           ctx.reply(`✅ Added ${streamerHandle} to your watchlist!`);
@@ -344,23 +357,24 @@ Made with ❤️ by [Otomato](https://otomato.xyz) - Build your own bots!`;
     });
 
     // List streamers command
-    this.bot.command('list', (ctx) => {
+    this.bot.command('list', async (ctx) => {
       const userId = ctx.from.id;
-      const userData = this.users.get(userId);
+      const userData = await this.getUser(userId);
       
       if (!userData) {
         return ctx.reply('Please use /start first!');
       }
 
-      if (userData.streamers.length === 0) {
+      const streamers = await this.getUserStreamers(userId);
+      if (streamers.length === 0) {
         return ctx.reply('You are not watching any streamers yet. Use /add <streamer> to add one!');
       }
 
-      const status = userData.notificationsEnabled ? '🔔 ON' : '🔕 OFF';
-      const streamerList = userData.streamers.map(s => `• ${s}`).join('\n');
+      const status = userData.notifications_enabled ? '🔔 ON' : '🔕 OFF';
+      const streamerList = streamers.map(s => `• ${s}`).join('\n');
       
       ctx.reply(
-        `📺 Your Streamers (${userData.streamers.length}):\n\n` +
+        `📺 Your Streamers (${streamers.length}):\n\n` +
         `${streamerList}\n\n` +
         `Notifications: ${status}\n\n` +
         'Made with ❤️ by Otomato'
@@ -370,14 +384,15 @@ Made with ❤️ by [Otomato](https://otomato.xyz) - Build your own bots!`;
     // Toggle notifications command
     this.bot.command('toggle', async (ctx) => {
       const userId = ctx.from.id;
-      const userData = this.users.get(userId);
+      const userData = await this.getUser(userId);
       
       if (!userData) {
         return ctx.reply('Please use /start first!');
       }
 
-      userData.notificationsEnabled = !userData.notificationsEnabled;
-      const status = userData.notificationsEnabled ? 'enabled' : 'disabled';
+      const newStatus = !userData.notifications_enabled;
+      await this.updateUserNotifications(userId, newStatus);
+      const status = newStatus ? 'enabled' : 'disabled';
       
       ctx.reply(`🔔 Notifications ${status}!`);
     });
@@ -387,7 +402,7 @@ Made with ❤️ by [Otomato](https://otomato.xyz) - Build your own bots!`;
       console.log('\n🔍 [TEXT HANDLER] Processing incoming text...');
       
       const userId = ctx.from.id;
-      const userData = this.users.get(userId);
+      const userData = await this.getUser(userId);
       
       console.log(`👤 [TEXT HANDLER] User ID: ${userId}`);
       console.log(`📊 [TEXT HANDLER] User data exists: ${!!userData}`);
@@ -430,10 +445,11 @@ Made with ❤️ by [Otomato](https://otomato.xyz) - Build your own bots!`;
 
       try {
         console.log(`🔍 [TEXT HANDLER] Checking if "${streamerHandle}" is already in watchlist...`);
-        console.log(`📋 [TEXT HANDLER] Current streamers: [${userData.streamers.join(', ')}]`);
+        const currentStreamers = await this.getUserStreamers(userId);
+        console.log(`📋 [TEXT HANDLER] Current streamers: [${currentStreamers.join(', ')}]`);
         
         // Add streamer to user's list
-        if (!userData.streamers.includes(streamerHandle)) {
+        if (!currentStreamers.includes(streamerHandle)) {
           console.log(`✅ [TEXT HANDLER] "${streamerHandle}" not in watchlist, proceeding...`);
           
           // Validate streamer exists (basic check)
@@ -446,16 +462,32 @@ Made with ❤️ by [Otomato](https://otomato.xyz) - Build your own bots!`;
           }
           
           console.log(`✅ [TEXT HANDLER] Streamer "${streamerHandle}" validation passed`);
-          userData.streamers.push(streamerHandle);
-          console.log(`📝 [TEXT HANDLER] Added "${streamerHandle}" to user's streamers list`);
+          
+          // Add to database
+          await this.addStreamerToUser(userId, streamerHandle);
+          console.log(`📝 [TEXT HANDLER] Added "${streamerHandle}" to user's streamers in database`);
           
           // Create Otomato workflow for this user-streamer combination
           console.log(`🔧 [TEXT HANDLER] Creating Otomato workflow for "${streamerHandle}"...`);
-          const workflowId = await this.createStreamerWorkflow(streamerHandle, userData.chatId);
-          console.log(`✅ [TEXT HANDLER] Workflow created with ID: ${workflowId}`);
+          let workflowId;
+          try {
+            workflowId = await this.createStreamerWorkflow(streamerHandle, userData.chat_id);
+            console.log(`✅ [TEXT HANDLER] Workflow created with ID: ${workflowId}`);
+          } catch (workflowError) {
+            console.error(`❌ [TEXT HANDLER] Failed to create workflow for "${streamerHandle}":`, workflowError);
+            // Remove the streamer from database since workflow creation failed
+            await this.removeStreamerFromUser(userId, streamerHandle);
+            return ctx.reply(`❌ Failed to create notification workflow for ${streamerHandle}. Please check your Otomato token and try again.`);
+          }
           
-          this.activeWorkflows.set(`${userId}_${streamerHandle}`, workflowId);
-          console.log(`💾 [TEXT HANDLER] Stored workflow mapping: ${userId}_${streamerHandle} -> ${workflowId}`);
+          // Save workflow to database
+          try {
+            await this.saveWorkflow(userId, streamerHandle, workflowId);
+            console.log(`💾 [TEXT HANDLER] Saved workflow to database: ${userId}_${streamerHandle} -> ${workflowId}`);
+          } catch (dbError) {
+            console.error(`❌ [TEXT HANDLER] Failed to save workflow to database:`, dbError);
+            return ctx.reply(`❌ Failed to save workflow configuration. Please try again.`);
+          }
           
           console.log(`🎉 [TEXT HANDLER] Successfully added "${streamerHandle}" to watchlist!`);
           ctx.reply(`✅ Added @${streamerHandle} to your watchlist!`);
@@ -475,60 +507,79 @@ Made with ❤️ by [Otomato](https://otomato.xyz) - Build your own bots!`;
     });
 
     // Inline keyboard callback handlers
-    this.bot.action('add_streamer', (ctx) => {
-      ctx.answerCbQuery();
-      ctx.reply('📺 *Add a Streamer*\n\nPlease send the streamer handle:\n\nExample: `ninja`', { parse_mode: 'Markdown' });
+    this.bot.action('add_streamer', async (ctx) => {
+      try {
+        await ctx.answerCbQuery();
+        ctx.reply('📺 *Add a Streamer*\n\nPlease send the streamer handle:\n\nExample: `ninja`', { parse_mode: 'Markdown' });
+      } catch (error) {
+        console.error('❌ [CALLBACK] Error handling add_streamer:', error);
+      }
     });
 
     this.bot.action('list_streamers', async (ctx) => {
-      ctx.answerCbQuery();
-      const userId = ctx.from.id;
-      const userData = this.users.get(userId);
-      
-      if (!userData) {
-        return ctx.reply('Please use /start first!');
-      }
+      try {
+        await ctx.answerCbQuery();
+        const userId = ctx.from.id;
+        const userData = await this.getUser(userId);
+        
+        if (!userData) {
+          return ctx.reply('Please use /start first!');
+        }
 
-      if (userData.streamers.length === 0) {
-        return ctx.reply('You are not watching any streamers yet. Use /add <streamer> to add one!');
-      }
+        const streamers = await this.getUserStreamers(userId);
+        if (streamers.length === 0) {
+          return ctx.reply('You are not watching any streamers yet. Use /add <streamer> to add one!');
+        }
 
-      const status = userData.notificationsEnabled ? '🔔 ON' : '🔕 OFF';
-      const streamerList = userData.streamers.map(s => `• ${s}`).join('\n');
-      
-      ctx.reply(
-        `📺 *Your Streamers (${userData.streamers.length}):*\n\n` +
-        `${streamerList}\n\n` +
-        `Notifications: ${status}\n\n` +
-        `Use /remove <streamer> to remove a streamer`,
-        { parse_mode: 'Markdown' }
-      );
+        const status = userData.notifications_enabled ? '🔔 ON' : '🔕 OFF';
+        const streamerList = streamers.map(s => `• ${s}`).join('\n');
+        
+        ctx.reply(
+          `📺 *Your Streamers (${streamers.length}):*\n\n` +
+          `${streamerList}\n\n` +
+          `Notifications: ${status}\n\n` +
+          `Use /remove <streamer> to remove a streamer`,
+          { parse_mode: 'Markdown' }
+        );
+      } catch (error) {
+        console.error('❌ [CALLBACK] Error handling list_streamers:', error);
+      }
     });
 
     this.bot.action('toggle_notifications', async (ctx) => {
-      ctx.answerCbQuery();
-      const userId = ctx.from.id;
-      const userData = this.users.get(userId);
-      
-      if (!userData) {
-        return ctx.reply('Please use /start first!');
+      try {
+        await ctx.answerCbQuery();
+        const userId = ctx.from.id;
+        const userData = await this.getUser(userId);
+        
+        if (!userData) {
+          return ctx.reply('Please use /start first!');
+        }
+
+        const newStatus = !userData.notifications_enabled;
+        await this.updateUserNotifications(userId, newStatus);
+        const status = newStatus ? 'enabled' : 'disabled';
+        const emoji = newStatus ? '🔔' : '🔕';
+        
+        ctx.reply(`${emoji} Notifications ${status}!`);
+      } catch (error) {
+        console.error('❌ [CALLBACK] Error handling toggle_notifications:', error);
       }
-
-      userData.notificationsEnabled = !userData.notificationsEnabled;
-      const status = userData.notificationsEnabled ? 'enabled' : 'disabled';
-      const emoji = userData.notificationsEnabled ? '🔔' : '🔕';
-      
-      ctx.reply(`${emoji} Notifications ${status}!`);
     });
 
-    this.bot.action('remove_streamer', (ctx) => {
-      ctx.answerCbQuery();
-      ctx.reply('❌ *Remove a Streamer*\n\nPlease send the streamer handle:\n\nExample: `/remove ninja`', { parse_mode: 'Markdown' });
+    this.bot.action('remove_streamer', async (ctx) => {
+      try {
+        await ctx.answerCbQuery();
+        ctx.reply('❌ *Remove a Streamer*\n\nPlease send the streamer handle:\n\nExample: `/remove ninja`', { parse_mode: 'Markdown' });
+      } catch (error) {
+        console.error('❌ [CALLBACK] Error handling remove_streamer:', error);
+      }
     });
 
-    this.bot.action('help', (ctx) => {
-      ctx.answerCbQuery();
-      const helpMessage = `ℹ️ *Help & Commands*
+    this.bot.action('help', async (ctx) => {
+      try {
+        await ctx.answerCbQuery();
+        const helpMessage = `ℹ️ *Help & Commands*
 
 *Available Commands:*
 • \`/add <streamer>\` - Add streamer to watchlist
@@ -547,7 +598,10 @@ Made with ❤️ by [Otomato](https://otomato.xyz) - Build your own bots!`;
 
 *Need help?* Visit [Otomato.xyz](https://otomato.xyz) for more info!`;
 
-      ctx.replyWithMarkdown(helpMessage);
+        ctx.replyWithMarkdown(helpMessage);
+      } catch (error) {
+        console.error('❌ [CALLBACK] Error handling help:', error);
+      }
     });
   }
 
@@ -640,13 +694,41 @@ Made with ❤️ by [Otomato](https://otomato.xyz) - Build your own bots!`;
   }
 
   // Start the bot
-  start() {
-    this.bot.launch();
-    console.log('🍅 Abstract Streamer Bot started!');
-    
-    // Graceful shutdown
-    process.once('SIGINT', () => this.bot.stop('SIGINT'));
-    process.once('SIGTERM', () => this.bot.stop('SIGTERM'));
+  async start() {
+    try {
+      // Initialize database first
+      await this.initializeDatabase();
+      
+      // Add global error handler
+      this.bot.catch((err, ctx) => {
+        console.error('❌ [GLOBAL ERROR] Unhandled error:', err);
+        console.error('❌ [GLOBAL ERROR] Context:', {
+          updateType: ctx.updateType,
+          userId: ctx.from?.id,
+          chatId: ctx.chat?.id,
+          messageId: ctx.message?.message_id
+        });
+        
+        // Try to send error message to user if possible
+        try {
+          if (ctx.reply) {
+            ctx.reply('❌ An unexpected error occurred. Please try again later.');
+          }
+        } catch (replyError) {
+          console.error('❌ [GLOBAL ERROR] Failed to send error message:', replyError);
+        }
+      });
+
+      this.bot.launch();
+      console.log('🍅 Abstract Streamer Bot started!');
+      
+      // Graceful shutdown
+      process.once('SIGINT', () => this.bot.stop('SIGINT'));
+      process.once('SIGTERM', () => this.bot.stop('SIGTERM'));
+    } catch (error) {
+      console.error('❌ [STARTUP] Failed to start bot:', error);
+      process.exit(1);
+    }
   }
 }
 
