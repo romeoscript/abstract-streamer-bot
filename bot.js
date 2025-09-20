@@ -8,7 +8,7 @@ class AbstractStreamerBot {
     this.bot = new Telegraf(telegramToken);
     this.otomatoToken = otomatoToken;
     
-    // Configure Otomato SDK with token and URL
+    // Configure Sprout Marketing SDK with token and URL
     const { apiServices } = require('otomato-sdk');
     const apiUrl = process.env.API_URL || 'https://api.otomato.xyz/api';
     console.log(`🔧 [SDK CONFIG] Setting API URL to: ${apiUrl}`);
@@ -41,7 +41,7 @@ Get notified instantly when your favorite streamers go live!
 
 *Test Mode:* Just type a streamer name to test workflow creation!
 
-Made with ❤️ by [Otomato](https://otomato.xyz) - Build your own bots!`;
+Made with ❤️ by [Sprout Marketing](https://sprout.marketing) - Build your own bots!`;
 
       const keyboard = {
         reply_markup: {
@@ -55,7 +55,7 @@ Made with ❤️ by [Otomato](https://otomato.xyz) - Build your own bots!`;
               { text: 'ℹ️ Help', callback_data: 'help' }
             ],
             [
-              { text: '🌐 Visit Otomato', url: 'https://otomato.xyz' }
+              { text: '🌐 Visit Sprout Marketing', url: 'https://sprout.marketing' }
             ]
           ]
         }
@@ -127,7 +127,7 @@ Made with ❤️ by [Otomato](https://otomato.xyz) - Build your own bots!`;
       console.log(`🎯 [TEXT HANDLER] Cleaned streamer handle: "${streamerHandle}"`);
 
       try {
-        console.log(`🔧 [TEXT HANDLER] Creating Otomato workflow for "${streamerHandle}"...`);
+        console.log(`🔧 [TEXT HANDLER] Creating Sprout Marketing workflow for "${streamerHandle}"...`);
         const chatId = ctx.chat.id.toString();
         
           let workflowId;
@@ -318,7 +318,7 @@ Made with ❤️ by [Otomato](https://otomato.xyz) - Build your own bots!`;
 *What Happens:*
 1. Bot validates the streamer name format
 2. Creates a workflow with Abstract trigger + Telegram action
-3. Calls Otomato API to create the workflow
+3. Calls Sprout Marketing API to create the workflow
 4. Shows you the result (success or error)
 
 *Debugging:*
@@ -326,7 +326,7 @@ Made with ❤️ by [Otomato](https://otomato.xyz) - Build your own bots!`;
 • Error messages will show exactly what went wrong
 • This helps identify API endpoint or authentication issues
 
-*Need help?* Visit [Otomato.xyz](https://otomato.xyz) for more info!`;
+*Need help?* Visit [Sprout Marketing](https://sproutmarketing.xyz) for more info!`;
 
         ctx.replyWithMarkdown(helpMessage);
       } catch (error) {
@@ -449,7 +449,7 @@ Made with ❤️ by [Otomato](https://otomato.xyz) - Build your own bots!`;
       try {
         await ctx.answerCbQuery();
         
-        const welcomeMessage = `🍅 *Welcome to Abstract Streamer Notifications!*\n\nGet notified instantly when your favorite streamers go live!\n\n*Features:*\n• 📺 Real-time stream notifications\n• 🎯 Customizable watchlist\n• 🔔 Smart notification management\n• ⚡ Lightning-fast alerts\n\nMade with ❤️ by [Otomato](https://otomato.xyz) - Build your own bots!`;
+        const welcomeMessage = `🍅 *Welcome to Abstract Streamer Notifications!*\n\nGet notified instantly when your favorite streamers go live!\n\n*Features:*\n• 📺 Real-time stream notifications\n• 🎯 Customizable watchlist\n• 🔔 Smart notification management\n• ⚡ Lightning-fast alerts\n\nMade with ❤️ by [Sprout Marketing](https://sprout.marketing) - Build your own bots!`;
 
         const keyboard = {
           reply_markup: {
@@ -463,7 +463,7 @@ Made with ❤️ by [Otomato](https://otomato.xyz) - Build your own bots!`;
                 { text: 'ℹ️ Help', callback_data: 'help' }
               ],
               [
-                { text: '🌐 Visit Otomato', url: 'https://otomato.xyz' }
+                { text: '🌐 Visit Sprout Marketing', url: 'https://sprout.marketing' }
               ]
             ]
           }
@@ -548,7 +548,7 @@ Made with ❤️ by [Otomato](https://otomato.xyz) - Build your own bots!`;
     }
   }
 
-  // Create Otomato workflow for streamer notifications
+  // Create Sprout Marketing workflow for streamer notifications
   async createStreamerWorkflow(streamerHandle, chatId) {
     console.log(`🔧 [WORKFLOW] Starting workflow creation for "${streamerHandle}"`);
     console.log(`🔧 [WORKFLOW] Chat ID: ${chatId}`);
