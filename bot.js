@@ -47,12 +47,14 @@ Made with ❤️ by [Otomato](https://otomato.xyz) - Build your own AI Agents!`;
           inline_keyboard: [
             [
               { text: '➕ Add Streamer', callback_data: 'add_streamer' },
-              { text: '📋 My Workflows', callback_data: 'list_workflows' }
-            ],
-            [
-              { text: '🗑️ Delete All', callback_data: 'delete_all_workflows' },
               { text: 'ℹ️ Help', callback_data: 'help' }
             ]
+            // [
+            //   { text: '📋 My Workflows', callback_data: 'list_workflows' }
+            // ],
+            // [
+            //   { text: '🗑️ Delete All', callback_data: 'delete_all_workflows' }
+            // ],
             // [
             //   { text: '🌐 Visit Otomato', url: 'https://otomato.xyz' }
             // ]
@@ -544,12 +546,14 @@ Need help? Visit [Otomato](https://otomato.xyz) for more info!`;
             inline_keyboard: [
               [
                 { text: '➕ Add Streamer', callback_data: 'add_streamer' },
-                { text: '📋 My Workflows', callback_data: 'list_workflows' }
-              ],
-              [
-                { text: '🗑️ Delete All', callback_data: 'delete_all_workflows' },
                 { text: 'ℹ️ Help', callback_data: 'help' }
               ]
+              // [
+              //   { text: '📋 My Workflows', callback_data: 'list_workflows' }
+              // ],
+              // [
+              //   { text: '🗑️ Delete All', callback_data: 'delete_all_workflows' }
+              // ],
               // [
               //   { text: '🌐 Visit Otomato', url: 'https://otomato.xyz' }
               // ]
