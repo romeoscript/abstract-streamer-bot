@@ -39,7 +39,7 @@ Get notified instantly when your favorite streamers go live!
 • 🔔 Smart notification management
 • ⚡ Lightning-fast alerts
 
-*Test Mode:* Just type a streamer name to test workflow creation!
+*Quick Start:* Just type a streamer name to create a workflow!
 
 Made with ❤️ by [Sprout Marketing](https://sprout.marketing) - Build your own bots!`;
 
@@ -146,12 +146,12 @@ Made with ❤️ by [Sprout Marketing](https://sprout.marketing) - Build your ow
     });
 
     // Inline keyboard callback handlers
-    this.bot.action('test_streamer', async (ctx) => {
+    this.bot.action('add_streamer', async (ctx) => {
       try {
         await ctx.answerCbQuery();
-        ctx.reply('📺 *Test Streamer Workflow*\n\nJust type a streamer name to test workflow creation!\n\nExample: `Ares` or `@Ares`', { parse_mode: 'Markdown' });
+        ctx.reply('➕ *Add Streamer*\n\nJust type a streamer name to create a workflow!\n\nExample: `Ares` or `@Ares`', { parse_mode: 'Markdown' });
       } catch (error) {
-        console.error('❌ [CALLBACK] Error handling test_streamer:', error);
+        console.error('❌ [CALLBACK] Error handling add_streamer:', error);
       }
     });
 
@@ -302,12 +302,12 @@ Made with ❤️ by [Sprout Marketing](https://sprout.marketing) - Build your ow
     this.bot.action('help', async (ctx) => {
       try {
         await ctx.answerCbQuery();
-        const helpMessage = `ℹ️ *Help & Test Mode*
+        const helpMessage = `ℹ️ *Help & Instructions*
 
-*How to Test:*
+*How to Use:*
 • Just type any streamer name: \`Ares\` or \`@Ares\`
-• The bot will try to create a workflow for that streamer
-• You'll see detailed logs and error messages
+• The bot will create a workflow for that streamer
+• You'll receive notifications when they go live
 
 *Workflow Management:*
 • Use "My Workflows" to see all your workflows in a clean list
@@ -321,10 +321,10 @@ Made with ❤️ by [Sprout Marketing](https://sprout.marketing) - Build your ow
 3. Calls Sprout Marketing API to create the workflow
 4. Shows you the result (success or error)
 
-*Debugging:*
-• Check the console logs for detailed API call information
-• Error messages will show exactly what went wrong
-• This helps identify API endpoint or authentication issues
+*Support:*
+• If you encounter issues, check the error messages
+• Contact support if problems persist
+• All workflows are monitored automatically
 
 *Need help?* Visit [Sprout Marketing](https://sproutmarketing.xyz) for more info!`;
 
@@ -455,7 +455,7 @@ Made with ❤️ by [Sprout Marketing](https://sprout.marketing) - Build your ow
           reply_markup: {
             inline_keyboard: [
               [
-                { text: '🧪 Test Streamer', callback_data: 'test_streamer' },
+                { text: '➕ Add Streamer', callback_data: 'add_streamer' },
                 { text: '📋 My Workflows', callback_data: 'list_workflows' }
               ],
               [
@@ -681,7 +681,7 @@ Made with ❤️ by [Sprout Marketing](https://sprout.marketing) - Build your ow
       });
 
       this.bot.launch();
-      console.log('🍅 Abstract Streamer Bot started! (Test Mode - No Database)');
+      console.log('🍅 Abstract Streamer Bot started!');
       
       // Graceful shutdown
       process.once('SIGINT', () => this.bot.stop('SIGINT'));
