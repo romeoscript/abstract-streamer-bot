@@ -134,7 +134,7 @@ Made with ❤️ by [Otomato](https://otomato.xyz) - Build your own bots!`;
           try {
           workflowId = await this.createStreamerWorkflow(streamerHandle, chatId);
             console.log(`✅ [TEXT HANDLER] Workflow created with ID: ${workflowId}`);
-          ctx.reply(`✅ Successfully created workflow for @${streamerHandle}!\n\n🆔 Workflow ID: ${workflowId}`);
+          ctx.reply(`✅ Successfully created workflow for @${streamerHandle}!\n\nYou'll receive notifications when they go live!`);
           } catch (workflowError) {
             console.error(`❌ [TEXT HANDLER] Failed to create workflow for "${streamerHandle}":`, workflowError);
           ctx.reply(`❌ Failed to create notification workflow for ${streamerHandle}.\n\nError: ${workflowError.message}`);
@@ -229,9 +229,10 @@ Made with ❤️ by [Otomato](https://otomato.xyz) - Build your own bots!`;
           { text: '🏠 Back to Menu', callback_data: 'back_to_menu' }
         ]);
         
-        // Add delete all button
+        // Add delete buttons
         keyboard.push([
-          { text: '🗑️ Delete All Workflows', callback_data: 'delete_all_workflows' }
+          { text: '🗑️ Delete Workflow', callback_data: 'delete_workflow_prompt' },
+          { text: '🗑️ Delete All', callback_data: 'delete_all_workflows' }
         ]);
         
         const replyMarkup = {
@@ -399,9 +400,10 @@ Made with ❤️ by [Otomato](https://otomato.xyz) - Build your own bots!`;
           { text: '🏠 Back to Menu', callback_data: 'back_to_menu' }
         ]);
         
-        // Add delete all button
+        // Add delete buttons
         keyboard.push([
-          { text: '🗑️ Delete All Workflows', callback_data: 'delete_all_workflows' }
+          { text: '🗑️ Delete Workflow', callback_data: 'delete_workflow_prompt' },
+          { text: '🗑️ Delete All', callback_data: 'delete_all_workflows' }
         ]);
         
         const replyMarkup = {
@@ -414,6 +416,31 @@ Made with ❤️ by [Otomato](https://otomato.xyz) - Build your own bots!`;
       } catch (error) {
         console.error('❌ [CALLBACK] Error handling pagination:', error);
         ctx.reply('❌ Error loading page. Please try again.');
+      }
+    });
+
+    // Handle delete workflow prompt
+    this.bot.action('delete_workflow_prompt', async (ctx) => {
+      try {
+        await ctx.answerCbQuery();
+        
+        const message = `🗑️ *Delete Individual Workflow*\n\nTo delete a specific workflow:\n\n1. Copy the workflow ID from the list above\n2. Use the command: \`/delete <workflow-id>\`\n\n*Example:*\n\`/delete 7ebd0b5c-76fb-4192-9c3e-e2a8b0f2fada\`\n\n*Or use the buttons below for quick actions:*`;
+
+        const keyboard = {
+          reply_markup: {
+            inline_keyboard: [
+              [
+                { text: '📋 Back to Workflows', callback_data: 'list_workflows' },
+                { text: '🏠 Main Menu', callback_data: 'back_to_menu' }
+              ]
+            ]
+          }
+        };
+
+        ctx.editMessageText(message, { parse_mode: 'Markdown', ...keyboard });
+      } catch (error) {
+        console.error('❌ [CALLBACK] Error handling delete workflow prompt:', error);
+        ctx.reply('❌ Error showing delete instructions. Please try again.');
       }
     });
 
@@ -630,7 +657,7 @@ Made with ❤️ by [Otomato](https://otomato.xyz) - Build your own bots!`;
     return workflow;
   }
 
-  // Start the bot
+
   async start() {
     try {
       // Add global error handler
