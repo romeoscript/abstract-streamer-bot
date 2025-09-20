@@ -4,10 +4,13 @@
   "main": "bot.js",
   "scripts": {
     "start": "node bot.js",
-    "dev": "nodemon bot.js"
+    "dev": "nodemon bot.js",
+    "workflows": "node manage-workflows.js",
+    "test-api": "node test-api.js"
   },
   "license": "MIT",
   "dependencies": {
+    "axios": "^1.6.0",
     "dotenv": "^16.4.5",
     "nodemon": "^3.1.7",
     "otomato-sdk": "^2.0.337",
