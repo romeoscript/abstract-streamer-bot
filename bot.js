@@ -52,10 +52,10 @@ Made with ❤️ by Otomato - Build your own AI Agents!`;
             [
               { text: '🗑️ Delete All', callback_data: 'delete_all_workflows' },
               { text: 'ℹ️ Help', callback_data: 'help' }
-            ],
-            [
-              { text: '🌐 Visit Otomato', url: 'https://otomato.xyz' }
             ]
+            // [
+            //   { text: '🌐 Visit Otomato', url: 'https://otomato.xyz' }
+            // ]
           ]
         }
       };
@@ -554,10 +554,10 @@ Contact: [Support](https://t.me/Ares_Sprout)`;
               [
                 { text: '🗑️ Delete All', callback_data: 'delete_all_workflows' },
                 { text: 'ℹ️ Help', callback_data: 'help' }
-              ],
-              [
-                { text: '🌐 Visit Otomato', url: 'https://otomato.xyz' }
               ]
+              // [
+              //   { text: '🌐 Visit Otomato', url: 'https://otomato.xyz' }
+              // ]
             ]
           }
         };
