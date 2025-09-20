@@ -40,7 +40,7 @@ Get notified instantly when your favourite streamers go live on Abstract!
 
 *Quick Start:* Click "Add Streamer" then type in their AGW handle (Ex: Ares) to turn on reminders.
 
-Made with ❤️ by Otomato - Build your own AI Agents!`;
+Made with ❤️ by [Otomato](https://otomato.xyz) - Build your own AI Agents!`;
 
       const keyboard = {
         reply_markup: {
@@ -62,17 +62,17 @@ Made with ❤️ by Otomato - Build your own AI Agents!`;
 
       // Send welcome message with banner image
       try {
-        console.log('🖼️ [WELCOME] Attempting to send image...');
-        // Try to send with image first
+        console.log('🖼️ [WELCOME] Attempting to send banner image...');
+        // Try to send with Cloudinary image first
         await ctx.replyWithPhoto(
-          'https://picsum.photos/400/200?random=1',
+          'https://res.cloudinary.com/dxt4avubv/image/upload/v1758364720/banner_eyzazy.jpg',
           {
             caption: welcomeMessage,
             parse_mode: 'Markdown',
             reply_markup: keyboard.reply_markup
           }
         );
-        console.log('✅ [WELCOME] Image sent successfully!');
+        console.log('✅ [WELCOME] Banner image sent successfully!');
       } catch (imageError) {
         console.warn('⚠️ [WELCOME] Could not send image, falling back to text:', imageError.message);
         console.warn('⚠️ [WELCOME] Error details:', imageError.response?.data);
@@ -380,20 +380,15 @@ How to Use:
 • Enter in any streamer's handle (Ex: Ares or @Ares)
 • You will receive notifications whenever they go live
 
-Workflow Management:
-• Use "My Watchlist" to see all the streamers you have added
-• Use "Delete All" to remove all notifications at once
-• Use /delete streamer-handle to delete a specific streamer
 
 Support:
 • If you encounter issues, check the error messages
-• Contact support if problems persist 
+• Contact [support](https://t.me/Ares_Sprout) if problems persist 
 • All workflows are monitored automatically
 
-Need help? Visit Otomato for more info!
-Contact: [Support](https://t.me/Ares_Sprout)`;
+Need help? Visit [Otomato](https://otomato.xyz) for more info!`;
 
-        ctx.replyWithMarkdown(helpMessage);
+        ctx.replyWithMarkdown(helpMessage, { disable_web_page_preview: true });
       } catch (error) {
         console.error('❌ [CALLBACK] Error handling help:', error);
         try {
@@ -564,17 +559,20 @@ Contact: [Support](https://t.me/Ares_Sprout)`;
 
         // Send welcome message with banner image
         try {
-          // Try to send with image first
+          console.log('🖼️ [MENU] Attempting to send banner image...');
+          // Try to send with Cloudinary image first
           await ctx.replyWithPhoto(
-            'https://picsum.photos/400/200?random=1',
+            'https://res.cloudinary.com/dxt4avubv/image/upload/v1758364720/banner_eyzazy.jpg',
             {
               caption: welcomeMessage,
               parse_mode: 'Markdown',
               reply_markup: keyboard.reply_markup
             }
           );
+          console.log('✅ [MENU] Banner image sent successfully!');
         } catch (imageError) {
           console.warn('⚠️ [MENU] Could not send image, falling back to text:', imageError.message);
+          console.warn('⚠️ [MENU] Error details:', imageError.response?.data);
           // Fallback to text-only message
           ctx.replyWithMarkdown(welcomeMessage, keyboard);
         }
