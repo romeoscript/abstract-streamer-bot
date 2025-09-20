@@ -158,30 +158,93 @@ Made with ❤️ by [Otomato](https://otomato.xyz) - Build your own bots!`;
     this.bot.action('list_workflows', async (ctx) => {
       try {
         await ctx.answerCbQuery();
-        await ctx.reply('📋 Fetching your workflows...');
+        
+        // Check if this is a refresh (callback) or initial load
+        const isRefresh = ctx.callbackQuery && ctx.callbackQuery.message;
+        
+        if (!isRefresh) {
+          await ctx.reply('📋 Fetching your workflows...');
+        }
         
         const workflows = await this.getUserWorkflows();
         
         if (workflows.length === 0) {
-          ctx.reply('📭 No workflows found. Create one by typing a streamer name!');
+          if (isRefresh) {
+            ctx.editMessageText('📭 No workflows found. Create one by typing a streamer name!');
+          } else {
+            ctx.reply('📭 No workflows found. Create one by typing a streamer name!');
+          }
           return;
         }
+
+        // Show workflows in a clean, organized list - single page at a time
+        const workflowsPerPage = 8;
+        const totalPages = Math.ceil(workflows.length / workflowsPerPage);
+        const currentPage = 0; // Always start with page 0
         
-        let message = `📋 *Your Workflows (${workflows.length}):*\n\n`;
+        const startIndex = currentPage * workflowsPerPage;
+        const endIndex = Math.min(startIndex + workflowsPerPage, workflows.length);
+        const pageWorkflows = workflows.slice(startIndex, endIndex);
         
-        workflows.forEach((workflow, index) => {
-          const status = workflow.state === 'active' ? '🟢' : '🔴';
-          message += `${index + 1}. ${status} ${workflow.name}\n`;
-          message += `   ID: \`${workflow.id}\`\n`;
-          message += `   State: ${workflow.state || 'unknown'}\n`;
-          message += `   Created: ${workflow.dateCreated ? new Date(workflow.dateCreated).toLocaleDateString() : 'unknown'}\n\n`;
+        let message = `📋 *Your Workflows (${workflows.length} total)*\n`;
+        if (totalPages > 1) {
+          message += `*Page ${currentPage + 1} of ${totalPages}*\n`;
+        }
+        message += `\n`;
+        
+        pageWorkflows.forEach((workflow, index) => {
+          const globalIndex = startIndex + index + 1;
+          const status = workflow.state === 'active' ? '🟢 Active' : '🔴 Inactive';
+          const lastExec = workflow.lastExecution ? 
+            `Last run: ${new Date(workflow.lastExecution.dateCreated).toLocaleDateString()}` : 
+            'Never run';
+          const created = workflow.dateCreated ? 
+            `Created: ${new Date(workflow.dateCreated).toLocaleDateString()}` : 
+            'Created: Unknown';
+          
+          message += `**${globalIndex}.** ${status} *${workflow.name}*\n`;
+          message += `   🆔 \`${workflow.id}\`\n`;
+          message += `   📅 ${created}\n`;
+          message += `   ⚡ ${lastExec}\n\n`;
         });
         
-        message += `*Actions:*\n`;
-        message += `• Use /delete <workflow-id> to delete a specific workflow\n`;
-        message += `• Use "Delete All" button to remove all workflows`;
+        // Add navigation buttons if multiple pages
+        const keyboard = [];
+        if (totalPages > 1) {
+          const navButtons = [];
+          if (currentPage > 0) {
+            navButtons.push({ text: '⬅️ Previous', callback_data: `workflows_page_${currentPage - 1}` });
+          }
+          if (currentPage < totalPages - 1) {
+            navButtons.push({ text: 'Next ➡️', callback_data: `workflows_page_${currentPage + 1}` });
+          }
+          if (navButtons.length > 0) {
+            keyboard.push(navButtons);
+          }
+        }
         
-        ctx.replyWithMarkdown(message);
+        // Add action buttons
+        keyboard.push([
+          { text: '🔄 Refresh', callback_data: 'list_workflows' },
+          { text: '🏠 Back to Menu', callback_data: 'back_to_menu' }
+        ]);
+        
+        // Add delete all button
+        keyboard.push([
+          { text: '🗑️ Delete All Workflows', callback_data: 'delete_all_workflows' }
+        ]);
+        
+        const replyMarkup = {
+          reply_markup: {
+            inline_keyboard: keyboard
+          }
+        };
+        
+        if (isRefresh) {
+          ctx.editMessageText(message, { parse_mode: 'Markdown', ...replyMarkup });
+        } else {
+          ctx.reply(message, { parse_mode: 'Markdown', ...replyMarkup });
+        }
       } catch (error) {
         console.error('❌ [CALLBACK] Error listing workflows:', error);
         ctx.reply('❌ Error fetching workflows. Please try again.');
@@ -246,9 +309,10 @@ Made with ❤️ by [Otomato](https://otomato.xyz) - Build your own bots!`;
 • You'll see detailed logs and error messages
 
 *Workflow Management:*
-• Use "My Workflows" to see all your workflows
-• Use "Delete All" to remove all workflows
-• Use /delete <workflow-id> to delete specific workflows
+• Use "My Workflows" to see all your workflows in a clean list
+• Use "Delete All" to remove all workflows at once
+• Use /delete <workflow-id> to delete a specific workflow
+• Copy workflow ID from the list and use it with /delete command
 
 *What Happens:*
 1. Bot validates the streamer name format
@@ -266,6 +330,121 @@ Made with ❤️ by [Otomato](https://otomato.xyz) - Build your own bots!`;
         ctx.replyWithMarkdown(helpMessage);
       } catch (error) {
         console.error('❌ [CALLBACK] Error handling help:', error);
+      }
+    });
+
+
+    // Handle pagination for workflows
+    this.bot.action(/^workflows_page_(\d+)$/, async (ctx) => {
+      try {
+        await ctx.answerCbQuery();
+        const page = parseInt(ctx.match[1]);
+        
+        console.log(`📄 [PAGINATION] User wants page ${page + 1} of workflows`);
+        
+        // Re-fetch workflows and show the requested page
+        const workflows = await this.getUserWorkflows();
+        
+        if (workflows.length === 0) {
+          ctx.reply('📭 No workflows found. Create one by typing a streamer name!');
+          return;
+        }
+
+        const workflowsPerPage = 8;
+        const totalPages = Math.ceil(workflows.length / workflowsPerPage);
+        const startIndex = page * workflowsPerPage;
+        const endIndex = Math.min(startIndex + workflowsPerPage, workflows.length);
+        const pageWorkflows = workflows.slice(startIndex, endIndex);
+        
+        let message = `📋 *Your Workflows (${workflows.length} total)*\n`;
+        if (totalPages > 1) {
+          message += `*Page ${page + 1} of ${totalPages}*\n`;
+        }
+        message += `\n`;
+        
+        pageWorkflows.forEach((workflow, index) => {
+          const globalIndex = startIndex + index + 1;
+          const status = workflow.state === 'active' ? '🟢 Active' : '🔴 Inactive';
+          const lastExec = workflow.lastExecution ? 
+            `Last run: ${new Date(workflow.lastExecution.dateCreated).toLocaleDateString()}` : 
+            'Never run';
+          const created = workflow.dateCreated ? 
+            `Created: ${new Date(workflow.dateCreated).toLocaleDateString()}` : 
+            'Created: Unknown';
+          
+          message += `**${globalIndex}.** ${status} *${workflow.name}*\n`;
+          message += `   🆔 \`${workflow.id}\`\n`;
+          message += `   📅 ${created}\n`;
+          message += `   ⚡ ${lastExec}\n\n`;
+        });
+        
+        // Add navigation buttons if multiple pages
+        const keyboard = [];
+        if (totalPages > 1) {
+          const navButtons = [];
+          if (page > 0) {
+            navButtons.push({ text: '⬅️ Previous', callback_data: `workflows_page_${page - 1}` });
+          }
+          if (page < totalPages - 1) {
+            navButtons.push({ text: 'Next ➡️', callback_data: `workflows_page_${page + 1}` });
+          }
+          if (navButtons.length > 0) {
+            keyboard.push(navButtons);
+          }
+        }
+        
+        // Add action buttons
+        keyboard.push([
+          { text: '🔄 Refresh', callback_data: 'list_workflows' },
+          { text: '🏠 Back to Menu', callback_data: 'back_to_menu' }
+        ]);
+        
+        // Add delete all button
+        keyboard.push([
+          { text: '🗑️ Delete All Workflows', callback_data: 'delete_all_workflows' }
+        ]);
+        
+        const replyMarkup = {
+          reply_markup: {
+            inline_keyboard: keyboard
+          }
+        };
+        
+        ctx.editMessageText(message, { parse_mode: 'Markdown', ...replyMarkup });
+      } catch (error) {
+        console.error('❌ [CALLBACK] Error handling pagination:', error);
+        ctx.reply('❌ Error loading page. Please try again.');
+      }
+    });
+
+    // Handle back to menu
+    this.bot.action('back_to_menu', async (ctx) => {
+      try {
+        await ctx.answerCbQuery();
+        
+        const welcomeMessage = `🍅 *Welcome to Abstract Streamer Notifications!*\n\nGet notified instantly when your favorite streamers go live!\n\n*Features:*\n• 📺 Real-time stream notifications\n• 🎯 Customizable watchlist\n• 🔔 Smart notification management\n• ⚡ Lightning-fast alerts\n\nMade with ❤️ by [Otomato](https://otomato.xyz) - Build your own bots!`;
+
+        const keyboard = {
+          reply_markup: {
+            inline_keyboard: [
+              [
+                { text: '🧪 Test Streamer', callback_data: 'test_streamer' },
+                { text: '📋 My Workflows', callback_data: 'list_workflows' }
+              ],
+              [
+                { text: '🗑️ Delete All', callback_data: 'delete_all_workflows' },
+                { text: 'ℹ️ Help', callback_data: 'help' }
+              ],
+              [
+                { text: '🌐 Visit Otomato', url: 'https://otomato.xyz' }
+              ]
+            ]
+          }
+        };
+
+        ctx.replyWithMarkdown(welcomeMessage, keyboard);
+      } catch (error) {
+        console.error('❌ [CALLBACK] Error handling back to menu:', error);
       }
     });
 
