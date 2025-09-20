@@ -46,7 +46,7 @@ Made with ❤️ by Otomato - Build your own AI Agents!`;
         reply_markup: {
           inline_keyboard: [
             [
-                { text: '➕ Add Streamer', callback_data: 'add_streamer' },
+              { text: '➕ Add Streamer', callback_data: 'add_streamer' },
               { text: '📋 My Workflows', callback_data: 'list_workflows' }
             ],
             [
@@ -60,7 +60,25 @@ Made with ❤️ by Otomato - Build your own AI Agents!`;
         }
       };
 
-      ctx.replyWithMarkdown(welcomeMessage, keyboard);
+      // Send welcome message with banner image
+      try {
+        console.log('🖼️ [WELCOME] Attempting to send image...');
+        // Try to send with image first
+        await ctx.replyWithPhoto(
+          'https://picsum.photos/400/200?random=1',
+          {
+            caption: welcomeMessage,
+            parse_mode: 'Markdown',
+            reply_markup: keyboard.reply_markup
+          }
+        );
+        console.log('✅ [WELCOME] Image sent successfully!');
+      } catch (imageError) {
+        console.warn('⚠️ [WELCOME] Could not send image, falling back to text:', imageError.message);
+        console.warn('⚠️ [WELCOME] Error details:', imageError.response?.data);
+        // Fallback to text-only message
+        ctx.replyWithMarkdown(welcomeMessage, keyboard);
+      }
     });
 
     // Delete workflow command
@@ -168,8 +186,8 @@ Made with ❤️ by Otomato - Build your own AI Agents!`;
     this.bot.action('list_workflows', async (ctx) => {
       try {
         // Answer callback query with error handling
-        try {
-          await ctx.answerCbQuery();
+      try {
+        await ctx.answerCbQuery();
         } catch (cbError) {
           console.warn('⚠️ [CALLBACK] Could not answer callback query (likely timeout):', cbError.message);
         }
@@ -274,8 +292,8 @@ Made with ❤️ by Otomato - Build your own AI Agents!`;
     this.bot.action('delete_all_workflows', async (ctx) => {
       try {
         // Answer callback query with error handling
-        try {
-          await ctx.answerCbQuery();
+      try {
+        await ctx.answerCbQuery();
         } catch (cbError) {
           console.warn('⚠️ [CALLBACK] Could not answer callback query (likely timeout):', cbError.message);
         }
@@ -331,8 +349,8 @@ Made with ❤️ by Otomato - Build your own AI Agents!`;
     this.bot.action('cancel_delete', async (ctx) => {
       try {
         // Answer callback query with error handling
-        try {
-          await ctx.answerCbQuery();
+      try {
+        await ctx.answerCbQuery();
         } catch (cbError) {
           console.warn('⚠️ [CALLBACK] Could not answer callback query (likely timeout):', cbError.message);
         }
@@ -350,8 +368,8 @@ Made with ❤️ by Otomato - Build your own AI Agents!`;
     this.bot.action('help', async (ctx) => {
       try {
         // Answer callback query with error handling
-        try {
-          await ctx.answerCbQuery();
+      try {
+        await ctx.answerCbQuery();
         } catch (cbError) {
           console.warn('⚠️ [CALLBACK] Could not answer callback query (likely timeout):', cbError.message);
         }
@@ -373,9 +391,9 @@ Support:
 • All workflows are monitored automatically
 
 Need help? Visit Otomato for more info!
-Contact: @Ares_Sprout`;
+Contact: [Support](https://t.me/Ares_Sprout)`;
 
-        ctx.reply(helpMessage);
+        ctx.replyWithMarkdown(helpMessage);
       } catch (error) {
         console.error('❌ [CALLBACK] Error handling help:', error);
         try {
@@ -544,7 +562,22 @@ Contact: @Ares_Sprout`;
           }
         };
 
-        ctx.replyWithMarkdown(welcomeMessage, keyboard);
+        // Send welcome message with banner image
+        try {
+          // Try to send with image first
+          await ctx.replyWithPhoto(
+            'https://picsum.photos/400/200?random=1',
+            {
+              caption: welcomeMessage,
+              parse_mode: 'Markdown',
+              reply_markup: keyboard.reply_markup
+            }
+          );
+        } catch (imageError) {
+          console.warn('⚠️ [MENU] Could not send image, falling back to text:', imageError.message);
+          // Fallback to text-only message
+          ctx.replyWithMarkdown(welcomeMessage, keyboard);
+        }
       } catch (error) {
         console.error('❌ [CALLBACK] Error handling back to menu:', error);
         try {
