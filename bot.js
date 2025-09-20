@@ -47,7 +47,7 @@ Made with ❤️ by [Sprout Marketing](https://sprout.marketing) - Build your ow
         reply_markup: {
           inline_keyboard: [
             [
-              { text: '📺 Test Streamer', callback_data: 'test_streamer' },
+              { text: '📺  Streamer', callback_data: 'test_streamer' },
               { text: '📋 My Workflows', callback_data: 'list_workflows' }
             ],
             [
