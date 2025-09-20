@@ -28,26 +28,25 @@ class AbstractStreamerBot {
       const chatId = ctx.chat.id.toString();
       
       console.log(`👤 [START] User ${userId} started the bot`);
+      
+      const welcomeMessage = `✳️ *Abstract Notifications*
 
-      const welcomeMessage = `🍅 *Welcome to Abstract Streamer Notifications!*
-
-Get notified instantly when your favorite streamers go live! 
+Get notified instantly when your favourite streamers go live on Abstract! 
 
 *Features:*
-• 📺 Real-time stream notifications
-• 🎯 Customizable watchlist
-• 🔔 Smart notification management
 • ⚡ Lightning-fast alerts
+• 🎯 Customizable watchlist
+• ⏰ More features coming soon
 
-*Quick Start:* Just type a streamer name to create a workflow!
+*Quick Start:* Click "Add Streamer" then type in their AGW handle (Ex: Ares) to turn on reminders.
 
-Made with ❤️ by [Sprout Marketing](https://sprout.marketing) - Build your own bots!`;
+Made with ❤️ by Otomato - Build your own AI Agents!`;
 
       const keyboard = {
         reply_markup: {
           inline_keyboard: [
             [
-              { text: '📺  Streamer', callback_data: 'test_streamer' },
+                { text: '➕ Add Streamer', callback_data: 'add_streamer' },
               { text: '📋 My Workflows', callback_data: 'list_workflows' }
             ],
             [
@@ -55,7 +54,7 @@ Made with ❤️ by [Sprout Marketing](https://sprout.marketing) - Build your ow
               { text: 'ℹ️ Help', callback_data: 'help' }
             ],
             [
-              { text: '🌐 Visit Sprout Marketing', url: 'https://sprout.marketing' }
+              { text: '🌐 Visit Otomato', url: 'https://otomato.xyz' }
             ]
           ]
         }
@@ -148,16 +147,32 @@ Made with ❤️ by [Sprout Marketing](https://sprout.marketing) - Build your ow
     // Inline keyboard callback handlers
     this.bot.action('add_streamer', async (ctx) => {
       try {
+        // Answer callback query with error handling
+      try {
         await ctx.answerCbQuery();
-        ctx.reply('➕ *Add Streamer*\n\nJust type a streamer name to create a workflow!\n\nExample: `Ares` or `@Ares`', { parse_mode: 'Markdown' });
+        } catch (cbError) {
+          console.warn('⚠️ [CALLBACK] Could not answer callback query (likely timeout):', cbError.message);
+        }
+        
+        ctx.reply('🔔 Enter any streamer\'s AGW handle to turn on reminders! (Ex: @Ares or Ares)', { parse_mode: 'Markdown' });
       } catch (error) {
         console.error('❌ [CALLBACK] Error handling add_streamer:', error);
+        try {
+          ctx.reply('❌ Sorry, something went wrong. Please try again.');
+        } catch (replyError) {
+          console.error('❌ [CALLBACK] Could not send error message:', replyError);
+        }
       }
     });
 
     this.bot.action('list_workflows', async (ctx) => {
       try {
-        await ctx.answerCbQuery();
+        // Answer callback query with error handling
+        try {
+          await ctx.answerCbQuery();
+        } catch (cbError) {
+          console.warn('⚠️ [CALLBACK] Could not answer callback query (likely timeout):', cbError.message);
+        }
         
         // Check if this is a refresh (callback) or initial load
         const isRefresh = ctx.callbackQuery && ctx.callbackQuery.message;
@@ -248,13 +263,22 @@ Made with ❤️ by [Sprout Marketing](https://sprout.marketing) - Build your ow
         }
       } catch (error) {
         console.error('❌ [CALLBACK] Error listing workflows:', error);
-        ctx.reply('❌ Error fetching workflows. Please try again.');
+        try {
+          ctx.reply('❌ Error fetching workflows. Please try again.');
+        } catch (replyError) {
+          console.error('❌ [CALLBACK] Could not send error message:', replyError);
+        }
       }
     });
 
     this.bot.action('delete_all_workflows', async (ctx) => {
       try {
-        await ctx.answerCbQuery();
+        // Answer callback query with error handling
+        try {
+          await ctx.answerCbQuery();
+        } catch (cbError) {
+          console.warn('⚠️ [CALLBACK] Could not answer callback query (likely timeout):', cbError.message);
+        }
         
         const confirmKeyboard = {
           reply_markup: {
@@ -273,12 +297,22 @@ Made with ❤️ by [Sprout Marketing](https://sprout.marketing) - Build your ow
         });
       } catch (error) {
         console.error('❌ [CALLBACK] Error handling delete_all_workflows:', error);
+        try {
+          ctx.reply('❌ Sorry, something went wrong. Please try again.');
+        } catch (replyError) {
+          console.error('❌ [CALLBACK] Could not send error message:', replyError);
+        }
       }
     });
 
     this.bot.action('confirm_delete_all', async (ctx) => {
       try {
-        await ctx.answerCbQuery();
+        // Answer callback query with error handling
+        try {
+          await ctx.answerCbQuery();
+        } catch (cbError) {
+          console.warn('⚠️ [CALLBACK] Could not answer callback query (likely timeout):', cbError.message);
+        }
         await ctx.reply('🗑️ Deleting all workflows...');
         
         const deletedCount = await this.deleteAllWorkflows();
@@ -286,51 +320,69 @@ Made with ❤️ by [Sprout Marketing](https://sprout.marketing) - Build your ow
         ctx.reply(`✅ Successfully deleted ${deletedCount} workflow(s)!`);
       } catch (error) {
         console.error('❌ [CALLBACK] Error confirming delete all:', error);
-        ctx.reply('❌ Error deleting workflows. Please try again.');
+        try {
+          ctx.reply('❌ Error deleting workflows. Please try again.');
+        } catch (replyError) {
+          console.error('❌ [CALLBACK] Could not send error message:', replyError);
+        }
       }
     });
 
     this.bot.action('cancel_delete', async (ctx) => {
       try {
-        await ctx.answerCbQuery();
+        // Answer callback query with error handling
+        try {
+          await ctx.answerCbQuery();
+        } catch (cbError) {
+          console.warn('⚠️ [CALLBACK] Could not answer callback query (likely timeout):', cbError.message);
+        }
         ctx.reply('❌ Deletion cancelled.');
       } catch (error) {
         console.error('❌ [CALLBACK] Error cancelling delete:', error);
+        try {
+          ctx.reply('❌ Sorry, something went wrong. Please try again.');
+        } catch (replyError) {
+          console.error('❌ [CALLBACK] Could not send error message:', replyError);
+        }
       }
     });
 
     this.bot.action('help', async (ctx) => {
       try {
-        await ctx.answerCbQuery();
-        const helpMessage = `ℹ️ *Help & Instructions*
+        // Answer callback query with error handling
+        try {
+          await ctx.answerCbQuery();
+        } catch (cbError) {
+          console.warn('⚠️ [CALLBACK] Could not answer callback query (likely timeout):', cbError.message);
+        }
+        const helpMessage = `ℹ️ Help & Instructions
 
-*How to Use:*
-• Just type any streamer name: \`Ares\` or \`@Ares\`
-• The bot will create a workflow for that streamer
-• You'll receive notifications when they go live
+How to Use:
+• Click "Add Streamer" to add someone to your watchlist
+• Enter in any streamer's handle (Ex: Ares or @Ares)
+• You will receive notifications whenever they go live
 
-*Workflow Management:*
-• Use "My Workflows" to see all your workflows in a clean list
-• Use "Delete All" to remove all workflows at once
-• Use /delete <workflow-id> to delete a specific workflow
-• Copy workflow ID from the list and use it with /delete command
+Workflow Management:
+• Use "My Watchlist" to see all the streamers you have added
+• Use "Delete All" to remove all notifications at once
+• Use /delete streamer-handle to delete a specific streamer
 
-*What Happens:*
-1. Bot validates the streamer name format
-2. Creates a workflow with Abstract trigger + Telegram action
-3. Calls Sprout Marketing API to create the workflow
-4. Shows you the result (success or error)
-
-*Support:*
+Support:
 • If you encounter issues, check the error messages
-• Contact support if problems persist
+• Contact support if problems persist 
 • All workflows are monitored automatically
 
-*Need help?* Visit [Sprout Marketing](https://sproutmarketing.xyz) for more info!`;
+Need help? Visit Otomato for more info!
+Contact: @Ares_Sprout`;
 
-        ctx.replyWithMarkdown(helpMessage);
+        ctx.reply(helpMessage);
       } catch (error) {
         console.error('❌ [CALLBACK] Error handling help:', error);
+        try {
+          ctx.reply('❌ Sorry, something went wrong. Please try again.');
+        } catch (replyError) {
+          console.error('❌ [CALLBACK] Could not send error message:', replyError);
+        }
       }
     });
 
@@ -338,7 +390,12 @@ Made with ❤️ by [Sprout Marketing](https://sprout.marketing) - Build your ow
     // Handle pagination for workflows
     this.bot.action(/^workflows_page_(\d+)$/, async (ctx) => {
       try {
-        await ctx.answerCbQuery();
+        // Answer callback query with error handling
+        try {
+          await ctx.answerCbQuery();
+        } catch (cbError) {
+          console.warn('⚠️ [CALLBACK] Could not answer callback query (likely timeout):', cbError.message);
+        }
         const page = parseInt(ctx.match[1]);
         
         console.log(`📄 [PAGINATION] User wants page ${page + 1} of workflows`);
@@ -415,14 +472,23 @@ Made with ❤️ by [Sprout Marketing](https://sprout.marketing) - Build your ow
         ctx.editMessageText(message, { parse_mode: 'Markdown', ...replyMarkup });
       } catch (error) {
         console.error('❌ [CALLBACK] Error handling pagination:', error);
-        ctx.reply('❌ Error loading page. Please try again.');
+        try {
+          ctx.reply('❌ Error loading page. Please try again.');
+        } catch (replyError) {
+          console.error('❌ [CALLBACK] Could not send error message:', replyError);
+        }
       }
     });
 
     // Handle delete workflow prompt
     this.bot.action('delete_workflow_prompt', async (ctx) => {
       try {
-        await ctx.answerCbQuery();
+        // Answer callback query with error handling
+        try {
+          await ctx.answerCbQuery();
+        } catch (cbError) {
+          console.warn('⚠️ [CALLBACK] Could not answer callback query (likely timeout):', cbError.message);
+        }
         
         const message = `🗑️ *Delete Individual Workflow*\n\nTo delete a specific workflow:\n\n1. Copy the workflow ID from the list above\n2. Use the command: \`/delete <workflow-id>\`\n\n*Example:*\n\`/delete 7ebd0b5c-76fb-4192-9c3e-e2a8b0f2fada\`\n\n*Or use the buttons below for quick actions:*`;
 
@@ -440,16 +506,25 @@ Made with ❤️ by [Sprout Marketing](https://sprout.marketing) - Build your ow
         ctx.editMessageText(message, { parse_mode: 'Markdown', ...keyboard });
       } catch (error) {
         console.error('❌ [CALLBACK] Error handling delete workflow prompt:', error);
-        ctx.reply('❌ Error showing delete instructions. Please try again.');
+        try {
+          ctx.reply('❌ Error showing delete instructions. Please try again.');
+        } catch (replyError) {
+          console.error('❌ [CALLBACK] Could not send error message:', replyError);
+        }
       }
     });
 
     // Handle back to menu
     this.bot.action('back_to_menu', async (ctx) => {
       try {
-        await ctx.answerCbQuery();
+        // Answer callback query with error handling
+        try {
+          await ctx.answerCbQuery();
+        } catch (cbError) {
+          console.warn('⚠️ [CALLBACK] Could not answer callback query (likely timeout):', cbError.message);
+        }
         
-        const welcomeMessage = `🍅 *Welcome to Abstract Streamer Notifications!*\n\nGet notified instantly when your favorite streamers go live!\n\n*Features:*\n• 📺 Real-time stream notifications\n• 🎯 Customizable watchlist\n• 🔔 Smart notification management\n• ⚡ Lightning-fast alerts\n\nMade with ❤️ by [Sprout Marketing](https://sprout.marketing) - Build your own bots!`;
+        const welcomeMessage = `✳️ *Abstract Notifications*\n\nGet notified instantly when your favourite streamers go live on Abstract!\n\n*Features:*\n• ⚡ Lightning-fast alerts\n• 🎯 Customizable watchlist\n• ⏰ More features coming soon\n\n*Quick Start:* Click "Add Streamer" then type in their AGW handle (Ex: Ares) to turn on reminders.\n\nMade with ❤️ by Otomato - Build your own AI Agents!`;
 
         const keyboard = {
           reply_markup: {
@@ -463,7 +538,7 @@ Made with ❤️ by [Sprout Marketing](https://sprout.marketing) - Build your ow
                 { text: 'ℹ️ Help', callback_data: 'help' }
               ],
               [
-                { text: '🌐 Visit Sprout Marketing', url: 'https://sprout.marketing' }
+                { text: '🌐 Visit Otomato', url: 'https://otomato.xyz' }
               ]
             ]
           }
@@ -472,6 +547,11 @@ Made with ❤️ by [Sprout Marketing](https://sprout.marketing) - Build your ow
         ctx.replyWithMarkdown(welcomeMessage, keyboard);
       } catch (error) {
         console.error('❌ [CALLBACK] Error handling back to menu:', error);
+        try {
+          ctx.reply('❌ Sorry, something went wrong. Please try again.');
+        } catch (replyError) {
+          console.error('❌ [CALLBACK] Could not send error message:', replyError);
+        }
       }
     });
 
@@ -500,6 +580,16 @@ Made with ❤️ by [Sprout Marketing](https://sprout.marketing) - Build your ow
     } catch (error) {
       console.error('❌ [WORKFLOWS] Error fetching workflows:', error);
       console.error('❌ [WORKFLOWS] Error details:', error.response?.status, error.response?.data);
+      
+      // Handle specific error types
+      if (error.response?.status === 401) {
+        console.error('❌ [WORKFLOWS] Authentication failed - check OTOMATO_TOKEN');
+      } else if (error.response?.status === 404) {
+        console.error('❌ [WORKFLOWS] API endpoint not found - check API_URL');
+      } else if (error.code === 'ENOTFOUND' || error.code === 'ECONNREFUSED') {
+        console.error('❌ [WORKFLOWS] Network error - check internet connection and API_URL');
+      }
+      
       return [];
     }
   }
@@ -509,6 +599,9 @@ Made with ❤️ by [Sprout Marketing](https://sprout.marketing) - Build your ow
     try {
       const workflows = await this.getUserWorkflows();
       let deletedCount = 0;
+      let errorCount = 0;
+      
+      console.log(`🗑️ [DELETE ALL] Starting deletion of ${workflows.length} workflows...`);
       
       for (const workflow of workflows) {
         try {
@@ -519,32 +612,53 @@ Made with ❤️ by [Sprout Marketing](https://sprout.marketing) - Build your ow
           const result = await workflowObj.delete();
           if (result.success) {
             deletedCount++;
-            console.log(`✅ Deleted workflow: ${workflow.name} (${workflow.id})`);
+            console.log(`✅ [DELETE ALL] Deleted workflow: ${workflow.name || workflow.id}`);
+          } else {
+            errorCount++;
+            console.log(`⚠️ [DELETE ALL] Failed to delete workflow: ${workflow.name || workflow.id}`);
           }
         } catch (error) {
-          console.error(`❌ Failed to delete workflow ${workflow.id}:`, error);
+          errorCount++;
+          console.error(`❌ [DELETE ALL] Error deleting workflow ${workflow.id}:`, error.message);
         }
       }
       
+      console.log(`📊 [DELETE ALL] Completed: ${deletedCount} deleted, ${errorCount} errors`);
       return deletedCount;
     } catch (error) {
-      console.error('❌ [WORKFLOWS] Error deleting workflows:', error);
-      throw error;
+      console.error('❌ [DELETE ALL] Error in deleteAllWorkflows:', error);
+      return 0;
     }
   }
 
   // Delete specific workflow by ID
   async deleteWorkflowById(workflowId) {
     try {
+      console.log(`🗑️ [DELETE] Attempting to delete workflow: ${workflowId}`);
       const { Workflow } = require('otomato-sdk');
       const workflow = new Workflow('', [], []);
       workflow.id = workflowId;
       
       const result = await workflow.delete();
+      if (result.success) {
+        console.log(`✅ [DELETE] Successfully deleted workflow: ${workflowId}`);
+      } else {
+        console.log(`⚠️ [DELETE] Failed to delete workflow: ${workflowId} - ${result.error || 'Unknown error'}`);
+      }
       return result.success;
     } catch (error) {
-      console.error(`❌ [WORKFLOWS] Error deleting workflow ${workflowId}:`, error);
-      throw error;
+      console.error(`❌ [DELETE] Error deleting workflow ${workflowId}:`, error.message);
+      
+      // Handle specific error types
+      if (error.response?.status === 401) {
+        console.error('❌ [DELETE] Authentication failed - check OTOMATO_TOKEN');
+      } else if (error.response?.status === 404) {
+        console.error('❌ [DELETE] Workflow not found - may have been already deleted');
+      } else if (error.code === 'ENOTFOUND' || error.code === 'ECONNREFUSED') {
+        console.error('❌ [DELETE] Network error - check internet connection and API_URL');
+      }
+      
+      return false;
     }
   }
 
@@ -680,12 +794,32 @@ Made with ❤️ by [Sprout Marketing](https://sprout.marketing) - Build your ow
         }
       });
 
+      // Add process error handlers
+      process.on('uncaughtException', (error) => {
+        console.error('❌ [UNCAUGHT EXCEPTION]', error);
+        // Don't exit the process, just log the error
+      });
+
+      process.on('unhandledRejection', (reason, promise) => {
+        console.error('❌ [UNHANDLED REJECTION]', reason);
+        console.error('❌ [UNHANDLED REJECTION] Promise:', promise);
+      });
+
       this.bot.launch();
       console.log('🍅 Abstract Streamer Bot started!');
       
       // Graceful shutdown
-      process.once('SIGINT', () => this.bot.stop('SIGINT'));
-      process.once('SIGTERM', () => this.bot.stop('SIGTERM'));
+      process.once('SIGINT', () => {
+        console.log('🛑 [SHUTDOWN] Received SIGINT, shutting down gracefully...');
+        this.bot.stop('SIGINT');
+        process.exit(0);
+      });
+      
+      process.once('SIGTERM', () => {
+        console.log('🛑 [SHUTDOWN] Received SIGTERM, shutting down gracefully...');
+        this.bot.stop('SIGTERM');
+        process.exit(0);
+      });
     } catch (error) {
       console.error('❌ [STARTUP] Failed to start bot:', error);
       process.exit(1);
