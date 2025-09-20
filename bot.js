@@ -67,7 +67,7 @@ Made with ❤️ by [Otomato](https://otomato.xyz) - Build your own AI Agents!`;
         console.log('🖼️ [WELCOME] Attempting to send banner image...');
         // Try to send with Cloudinary image first
         await ctx.replyWithPhoto(
-          'https://res.cloudinary.com/dxt4avubv/image/upload/v1758364720/banner_eyzazy.jpg',
+          'https://res.cloudinary.com/dxt4avubv/image/upload/v1758379003/nowtrying_azzjcd.png',
           {
             caption: welcomeMessage,
             parse_mode: 'Markdown',
